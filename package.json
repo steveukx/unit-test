@@ -1,0 +1,18 @@
+{
+   "name":              "unit-test",
+   "description":       "Utility to run unit tests",
+   "author":            "Steve King <steve@mydev.co>",
+   "contributors":      [ { "name": "Steve King", "email": "steve@mydev.co" } ],
+   "version":           "0.0.1",
+   "main":              "./src/unit-test.js",
+   "bin": {},
+   "engines": {
+      "node":           ">= 0.6.0"
+   },
+   "dependencies": {
+      "readdir":        "",
+      "sinon":          ">=1.3.1"
+   },
+   "devDependencies": {
+   }
+}
