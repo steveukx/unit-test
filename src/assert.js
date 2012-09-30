@@ -1,20 +1,17 @@
 
 function doAssertion(assertion, args) {
-   var name = args.shift();
-   try {
-      assertion.apply(undefined, args);
-   }
-   catch(e) {
-      console.error(name, e.toString());
-      process.exit();
-   }
+   assertion.apply(undefined, args);
 }
 
-function AssertionError(found, expected) {
-   this.found = found;
+function AssertionError(actual, expected, message) {
+   this.name = 'AssertionError';
+   this.message = message;
+   this.actual = actual;
    this.expected = expected;
    this.toString = function() {
-      return 'Found ' + found + ' when should have found ' + expected;
+      return this.message ?
+                  this.message + ' :: ' + actual :
+                  'Found ' + actual + ' when should have found ' + expected;
    }
 }
 
@@ -28,7 +25,7 @@ function makeAssertion(assertionName, argumentsLength, assertion) {
    return function() {
       var args = [].slice.call(arguments, 0);
       if(args.length === argumentsLength) {
-         args.unshift('Call to ' + assertionName);
+         args.push('Call to ' + assertionName);
       }
 
       if(args.length !== argumentsLength + 1) {
@@ -36,37 +33,38 @@ function makeAssertion(assertionName, argumentsLength, assertion) {
       }
 
       doAssertion(assertion, args);
+      return Assertions;
    };
 }
 
-module.exports = {
-   assert: makeAssertion('assert', 1, function(found) {
-     if(found !== true) {
-        throw new AssertionError(found, true);
-     }
+var Assertions = module.exports = {
+   assert: makeAssertion('assert', 1, function(actual, message) {
+      Assertions.assertEquals(!!actual, true, message);
    }),
 
-   assertExists: makeAssertion('assert exists', 1, function(found) {
-      if(found === undefined) {
-         throw new AssertionError(found, 'not undefined');
+   assertExists: makeAssertion('assert exists', 1, function(actual, message) {
+      Assertions.assertNotEquals(actual, undefined, message);
+   }),
+
+   assertUndefined: makeAssertion('assert undefined', 1, function(actual, message) {
+      Assertions.assertEquals(actual, undefined, message);
+   }),
+
+   assertNull: makeAssertion('assert null', 1, function(actual, message) {
+      Assertions.assertEquals(actual, null, message);
+   }),
+
+   assertEquals: makeAssertion('assert equals', 2, function(actual, expected, message) {
+      if(actual !== expected) {
+         throw new AssertionError(actual, expected, message);
       }
    }),
 
-   assertUndefined: makeAssertion('assert undefined', 1, function(found) {
-      if(found !== undefined) {
-         throw new AssertionError(found, undefined);
+   assertNotEquals: makeAssertion('assert equals', 2, function(actual, expected, message) {
+      if(actual === expected) {
+         throw new AssertionError(actual, 'not ' + expected, message);
       }
    }),
 
-   assertNull: makeAssertion('assert null', 1, function(found) {
-      if(found !== null) {
-         throw new AssertionError(found, null);
-      }
-   }),
-
-   assertEquals: makeAssertion('assert equals', 2, function(found, expected) {
-      if(found !== expected) {
-         throw new AssertionError(found, expected);
-      }
-   })
+   AssertionError: AssertionError
 };

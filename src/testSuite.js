@@ -1,4 +1,16 @@
 
+var TestCase = require('./testCase');
+
+function testSuiteComplete(start, tests, errors) {
+   console.log('===============================');
+   console.log('=== Processed ' + tests + ' tests, ' + errors + ' failed');
+   console.log('=== in ' + (Date.now() - start) + 'ms');
+   console.log('===============================');
+   console.log('=== ' + (errors > 0 ? 'ERROR' : 'SUCCESSFUL'));
+   console.log('===============================');
+}
+
+
 function runTestSuite(paths) {
    if(!Array.isArray(paths)) {
       throw new TypeError('Paths supplied to test suite must be an array.');
@@ -6,27 +18,30 @@ function runTestSuite(paths) {
 
    var start = Date.now();
    var tests = 0;
+   var errors = 0;
+   var testCasesPending = paths.length;
 
    paths.forEach(function(testClass) {
-      var suite = require('./' + testClass);
-      console.log('===============================');
-      console.log(testClass);
-      var padding = new Array(6 /*testClass.length*/).join(' ');
-      for(var property in suite) {
-         if(/^test/.test(property)) {
-            console.log(padding + '.' + property.substr(4));
-            if(suite.setUp) suite.setUp();
-            suite[property]();
-            if(suite.tearDown) suite.tearDown();
-            tests++;
-         }
-      }
-   });
+      var suite = require(testClass);
+      var testCase = (suite instanceof TestCase) ? suite : new TestCase(testClass, suite);
 
-   console.log('===============================');
-   console.log('=== Processed ' + tests + ' tests');
-   console.log('=== in ' + (Date.now() - start) + 'ms');
-   console.log('===============================');
+      testCase.runTests(function(results) {
+         console.log('===============================');
+         console.log(testCase.name + ': ' + results.length + ' ran, ' + results.filter(function(res) {return res.result}).length + ' passed');
+
+         results.forEach(function(result) {
+            tests++;
+            if(!result.result) {
+               errors++;
+               console.log(result.name, result.error);
+            }
+         });
+
+         if(!--testCasesPending) {
+            testSuiteComplete(start, tests, errors);
+         }
+      })
+   });
 }
 
 module.exports = {
