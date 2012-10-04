@@ -1,5 +1,6 @@
 
 var TestCase = require('./testCase');
+var Path = require('path');
 
 function testSuiteComplete(start, tests, errors) {
    console.log('===============================');
@@ -23,7 +24,7 @@ function runTestSuite(paths) {
 
    paths.forEach(function(testClass) {
       var suite = require(testClass);
-      var testCase = (suite instanceof TestCase) ? suite : new TestCase(testClass, suite);
+      var testCase = (suite instanceof TestCase) ? suite : new TestCase(Path.basename(testClass), suite);
 
       testCase.runTests(function(results) {
          console.log('===============================');

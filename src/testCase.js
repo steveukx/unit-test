@@ -1,9 +1,11 @@
 /**
  * @class
  */
-var TestCase = (function (TestResult) {
+var TestCase = (function () {
 
    "use strict";
+
+   var SyncTest = require('./syncTest.js');
 
    /**
     *
@@ -24,26 +26,65 @@ var TestCase = (function (TestResult) {
       }
    }
 
-   TestCase.prototype.runTests = function(resultCallback) {
-      var results = [];
-
-      for(var test in this._tests) {
-         if(test.match(/^test/) && this._tests.hasOwnProperty(test)) {
-            this.setUp();
-            try {
-               this._tests[test]();
-               results.push(TestResult.success(test.replace(/^test/, '')));
+   /**
+    *
+    * @return {Test[]}
+    */
+   TestCase.prototype._buildTests = function() {
+      var stack = [];
+      for(var testName in this._tests) {
+         if(testName.match(/^test/) && this._tests.hasOwnProperty(testName)) {
+            var test = this._tests[testName];
+            if(typeof test == 'function') {
+               stack.push(new SyncTest(test).withName(testName.replace(/^test(\s*)/, '')));
             }
-            catch(e) {
-               results.push(TestResult.error(test.replace(/^test/, ''), e));
+            else if(test && typeof test.run == 'function') {
+               if(test.withName) {
+                  test.withName(testName.replace(/^test(\s*)/, ''));
+               }
+               stack.push(test);
             }
-            finally {
-               this.tearDown();
+            else {
+               throw new ReferenceError('TestCase cannot prepare a test where it is neither a function nor a Test instance');
             }
          }
       }
+      return stack;
+   };
 
-      resultCallback(results);
+   /**
+    * Runs all tests in this TestCase
+    * @param {Function} resultCallback
+    */
+   TestCase.prototype.runTests = function(resultCallback) {
+      this._results = [];
+      this._stack = this._buildTests();
+      this._onDone = resultCallback;
+
+      this._runNextTest();
+   };
+
+   /**
+    * Schedules the next test to be run, or sends the results back to the done handler
+    */
+   TestCase.prototype._runNextTest = function() {
+      var test = this._stack.shift();
+      if(test) {
+         this.setUp();
+         test.run(this._onTestDone.bind(this));
+         this.tearDown();
+      }
+      else {
+         this._onDone(this._results);
+      }
+   };
+
+   /**
+    *
+    */
+   TestCase.prototype._onTestDone = function(testResult) {
+      this._results.push(testResult);
+      this._runNextTest();
    };
 
    TestCase.prototype.setUp = function() {
@@ -60,7 +101,7 @@ var TestCase = (function (TestResult) {
 
    return TestCase;
 
-}(require('./testResult.js')));
+}());
 
 if(typeof module != 'undefined') {
    module.exports = TestCase;
