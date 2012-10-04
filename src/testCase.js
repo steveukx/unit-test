@@ -72,7 +72,6 @@ var TestCase = (function () {
       if(test) {
          this.setUp();
          test.run(this._onTestDone.bind(this));
-         this.tearDown();
       }
       else {
          this._onDone(this._results);
@@ -84,6 +83,7 @@ var TestCase = (function () {
     */
    TestCase.prototype._onTestDone = function(testResult) {
       this._results.push(testResult);
+      this.tearDown();
       this._runNextTest();
    };
 
