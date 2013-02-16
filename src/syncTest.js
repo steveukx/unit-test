@@ -29,21 +29,42 @@ var SyncTest = (function () {
    };
 
    /**
-    * Start running the test, the supplied callback will be called with a TestResult
+    * Start running the test, the supplied callback will be called with a TestResult. When the test has an arity of one,
+    * it is assumed to be an asynchronous test that will call the supplied argument as a function with an error, a
+    * function that should be called to get the actual assertions of the test or a falsy value to indicate that no
+    * errors occurred.
     *
     * @param {Function} resultCallback
+    * @param {Function} [testFn] Ordinarily omitted, but can be supplied to run nested tests in the case that the
+    *                            test returns a function that is the actual test suite to be run.
     */
-   SyncTest.prototype.run = function(resultCallback) {
-      var result;
+   SyncTest.prototype.run = function(resultCallback, testFn) {
+      var testName = this._name,
+         self = this,
+         test = testFn || this._test;
 
       try {
-         this._test();
-         result = TestResult.success(this._name);
+         if(test.length === 1) {
+            test(function(err) {
+               if(typeof err === "function") {
+                  self.run(resultCallback, err);
+               }
+               else if(err) {
+                  resultCallback(TestResult.error(testName, e));
+               }
+               else {
+                  resultCallback(TestResult.success(testName));
+               }
+            });
+         }
+         else {
+            test();
+            resultCallback(TestResult.success(testName));
+         }
       }
       catch(e) {
-         result = TestResult.error(this._name, e);
+         resultCallback(TestResult.error(testName, e));
       }
-      resultCallback(result);
    };
 
    return SyncTest;
