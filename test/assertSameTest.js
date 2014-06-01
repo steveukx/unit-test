@@ -21,19 +21,21 @@ var assertions = {
    ]
 };
 
-assertions.valid.forEach(function (assertion) {
-   Assert.doesNotThrow(function () {
-      unitTestAssertions.assertSame(assertion[0], assertion[1]);
-   });
-});
+module.exports = {
+    'test valid similarities': function () {
+        assertions.valid.forEach(function (assertion) {
+            Assert.doesNotThrow(function () {
+                unitTestAssertions.assertSame(assertion[0], assertion[1]);
+            });
+        });
+    },
 
-assertions.invalid.forEach(function (assertion) {
-   Assert.throws(function () {
-      unitTestAssertions.assertSame(assertion[0], assertion[1]);
-   });
-});
-
-console.log("####################\n" +
-            "## ALL TESTS PASS ##\n" +
-            "####################\n");
+    'test invalid similarities': function () {
+        assertions.invalid.forEach(function (assertion) {
+            Assert.throws(function () {
+                unitTestAssertions.assertSame(assertion[0], assertion[1]);
+            });
+        });
+    }
+};
 

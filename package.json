@@ -1,19 +1,27 @@
 {
-   "name":              "unit-test",
-   "description":       "Utility to run unit tests",
-   "author":            "Steve King <steve@mydev.co>",
-   "contributors":      [ { "name": "Steve King", "email": "steve@mydev.co" } ],
-   "version":           "0.0.7",
-   "main":              "./src/unit-test.js",
-   "bin": {},
-   "engines": {
-      "node":           ">= 0.6.0"
-   },
-   "dependencies": {
-      "readdir":        "",
-      "sinon":          ""
-   },
-   "scripts": {
-      "test": "node ./test"
-   }
+    "name": "unit-test",
+    "description": "Utility to run unit tests",
+    "author": "Steve King <steve@mydev.co>",
+    "contributors": [
+        {
+            "name": "Steve King",
+            "email": "steve@mydev.co"
+        }
+    ],
+    "version": "0.0.9",
+    "main": "./src/unit-test.js",
+    "repository": "git://github.com/steveukx/unit-test.git",
+    "bin": {},
+    "engines": {
+        "node": ">= 0.6.0"
+    },
+    "dependencies": {
+        "readdir": "",
+        "sinon": "",
+        "q": "^1.0.1"
+    },
+    "devDependencies": {},
+    "scripts": {
+        "test": "node test/runner.js"
+    }
 }
