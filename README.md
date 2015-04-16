@@ -13,7 +13,7 @@ Currently you get:
     TestSuite.namedFiles('testA.js', 'testB.js');
     
     // find all matching test files and run those
-    TestSutie.paths(__dirname__, 'tests/**.js');
+    TestSuite.paths(__dirname__, 'tests/**.js');
 
 Each test file loaded by the test suite should export an object that contains optional `setUp` and `tearDown` functions and any number of functions that begin with the word `test`. For example:
 
